@@ -1,96 +1,126 @@
-🚖 NYC Taxi Demand Analysis: The Festival Effect
+🚖 NYC Taxi Data Engine: From Analysis to Prediction
 
-A Big Data analysis of 2.9 million taxi trips to predict how "Festival Seasons" impact urban mobility, pricing strategies, and demand patterns in New York City.
+A scalable Big Data pipeline analyzing 2.9 million taxi trips to uncover festival trends and predict future demand using Distributed Computing.
 
 📖 Project Overview
 
-Does a holiday mean more business for taxi drivers, or less?
-Does a traffic-free road make the trip cheaper, even if the surge price is high?
+Managing urban mobility in a city like New York requires more than just Excel. It requires tools that can handle millions of data points without crashing.
 
-This project analyzes the January 2024 Yellow Taxi dataset (2.9M records) to answer these questions. Using Dask for out-of-core processing and Docker for reproducibility, I built a pipeline that cleans, visualizes, and models taxi demand during festivals (New Year's, MLK Day) versus standard workdays.
+This project is divided into two core modules, each tackling a specific Big Data challenge using industry-standard tools:
+
+Module 1 (Dask): The "Festival Effect" Analysis. Do holidays increase or decrease taxi demand? We analyze pricing and timing patterns during festivals using Dask.
+
+Module 2 (Apache Spark): Demand Prediction Engine. Using PySpark's Machine Learning library (MLlib), we build a robust Random Forest model to predict exactly how many taxis are needed at any location, at any hour.
+
+📊 Module 1: Festival Analysis (Dask)
+
+Goal: Solved memory constraints to analyze the impact of holidays on taxi economics.
 
 🎯 Key Objectives
 
-Solve the Memory Constraint: Process a 3GB+ dataset on a machine with only 1.7GB RAM using Dask.
+Memory Optimization: Process a 3GB+ dataset on a machine with only 1.7GB RAM using Dask's lazy evaluation.
 
-Volume Prediction: Quantify the drop in commuter traffic during holidays.
+Pattern Recognition: Quantify the shift in commuter behavior during holidays (New Year's, MLK Day).
 
-Dynamic Pricing Analysis: Determine if "Holiday Surge" is real or if faster trips offset the cost.
+💡 Key Insights
 
-💡 Key Insights (The "Aha!" Moments)
+The Volume Paradox: Demand drops by ~22% on holidays. The workforce stays home, outweighing the increase in tourists.
 
-1. The Volume Paradox
+The Price-Speed Inversion: A 5-mile trip is cheaper on a holiday because traffic is lighter, reducing the time-based meter charge.
 
-Contrary to popular belief, demand drops by ~22% on holidays.
+The "Time-Shift": The 8:00 AM rush hour vanishes. Demand peaks shift to 1:00 AM (Nightlife) and 3:00 PM (Leisure).
 
-Normal Day: ~90,000 trips (Commuters dominate).
+🖼️ Visualizations
 
-Festival Day: ~70,000 trips (Workforce stays home).
+(Screenshots of Dask Analysis)
 
-2. The Price-Speed Inversion
+Figure 1: Price vs. Distance comparison showing cheaper rates on festival days.
 
-A 5-mile trip is actually cheaper on a holiday.
+Figure 2: The "Time-Shift" - Commuter peaks (Blue) vs. Holiday Leisure peaks (Red).
 
-Why? Taxi meters charge for both distance and time.
+🤖 Module 2: Demand Prediction (Apache Spark)
 
-The Data: On holidays, traffic congestion vanishes. The average trip is 2 minutes faster, saving the passenger money on the time-based portion of the fare, even if base rates are high.
+Goal: Built a Machine Learning pipeline to predict taxi volume for resource planning.
 
-3. The "Time-Shift" Phenomenon
+🎯 Key Objectives
 
-The "Rush Hour" completely moves:
+Scalable ML: Use PySpark MLlib to train models on millions of rows where Scikit-Learn would fail.
 
-Work Days: Peaks at 8:00 AM and 6:00 PM (The Commute).
+Feature Engineering: Transform raw timestamps into predictive features (Hour, Day of Week, Is_Weekend).
 
-Holidays: Peaks at 1:00 AM (Party Rush) and 3:00 PM (Leisure/Shopping).
+High-Accuracy Modeling: Compare Linear Regression vs. Random Forest Regressor.
 
-🛠️ Technical Stack & Architecture
+⚙️ Methodology
 
-This project was built in a Dockerized Jupyter Environment to ensure portability.
+Data Aggregation: Grouped 2.9M trips by LocationID, Hour, and Day to calculate historical demand.
+
+Vectorization: Converted features into Spark-compatible feature vectors using VectorAssembler.
+
+Model Training: Trained a Random Forest Regressor to handle non-linear relationships (e.g., demand spiking at 5 PM but dropping at 7 PM).
+
+🚀 Results
+
+Model V1 (Baseline): RMSE = 1393 (High Error).
+
+Model V2 (Random Forest + Feature Engineering): RMSE = ~240.
+
+Conclusion: The model can predict the number of taxis needed at any location within an error margin of ~240 trips, enabling efficient fleet dispatching.
+
+Figure 3: Spark Prediction Output showing actual vs. predicted trip counts.
+
+🛠️ Technical Stack
 
 Component
 
 Technology
 
-Role
+Use Case
 
 Orchestration
 
 Docker
 
-Containerized the environment (Jupyter Scipy Notebook image).
+Containerized the Jupyter Scipy environment for reproducibility.
 
-Big Data Engine
+Processing (Mod 1)
 
 Dask
 
-Handled 2.9M rows on low RAM by using lazy evaluation and partitioning.
+Handling "Out-of-Core" computations on low RAM infrastructure.
+
+Processing (Mod 2)
+
+Apache Spark
+
+Distributed data processing and aggregation.
 
 Machine Learning
 
-Scikit-Learn
+Scikit-Learn / MLlib
 
-Trained Linear Regression models for Fare & Duration prediction.
-
-Analysis
-
-Pandas / NumPy
-
-Data manipulation and aggregation.
+Linear Regression (Dask) & Random Forest (Spark).
 
 Visualization
 
 Matplotlib / Seaborn
 
-Created comparative trend graphs.
+Trend graphing and comparative analysis.
 
-🏗️ Engineering Challenge: The "KilledWorker" Error
+🏗️ Engineering Challenges Solved
 
-Problem: The dataset size exceeded the available RAM (1.73 GB), causing Dask workers to crash (KilledWorker).
-Solution: I optimized the Dask Client configuration to use a Single-Worker Strategy (n_workers=1). This consolidated all available RAM into a single process, reducing overhead and allowing successful partition loading.
+1. The "KilledWorker" Memory Crash (Dask)
 
-# The Optimized Configuration
+Problem: Default Dask settings spawned 4 workers, splitting 1.7GB RAM into tiny chunks that crashed instantly when loading data.
+Solution: Optimized the Client to use a Single-Worker Strategy with multi-threading.
+
+# The Fix
 client = Client(n_workers=1, threads_per_worker=4)
 
+
+2. High-Dimensionality in Spark
+
+Problem: Predicting demand required combining continuous variables (Time) with categorical ones (Location IDs).
+Solution: Used Spark's VectorAssembler to flatten features into a single vector column required by MLlib algorithms.
 
 🚀 How to Run This Project
 
@@ -100,48 +130,27 @@ Docker Desktop installed.
 
 Git installed.
 
-Step 1: Clone the Repository
+Step 1: Clone & Setup
 
 git clone [https://github.com/shardul9320/NYC-Taxi-Festival-Analysis.git](https://github.com/shardul9320/NYC-Taxi-Festival-Analysis.git)
 cd NYC-Taxi-Festival-Analysis
 
 
-Step 2: Download the Data
+Step 2: Get the Data
 
-Due to GitHub size limits, the raw data is not included.
-
-Visit the NYC TLC Data Record.
-
-Download "Yellow Taxi Trip Records" for January 2024.
-
-Save the file as yellow_tripdata_2024-01.parquet in the project root.
+Download yellow_tripdata_2024-01.parquet from the NYC TLC Website and place it in the root folder.
 
 Step 3: Run with Docker
 
-# Pull the image
-docker pull jupyter/scipy-notebook
-
-# Run the container (Mounting the current directory)
-docker run -p 8888:8888 -v "$(pwd)":/home/jovyan/work jupyter/scipy-notebook
+docker pull jupyter/all-spark-notebook
+docker run -p 8888:8888 -v "$(pwd)":/home/jovyan/work jupyter/all-spark-notebook
 
 
-Note: If using Windows Command Prompt, replace $(pwd) with %cd%.
+Step 4: Execute
 
-Step 4: Execute the Analysis
+Module 1: Open NYC_Taxi_Analysis_Dask.ipynb
 
-Open the link provided in the terminal (usually http://127.0.0.1:8888).
-
-Open NYC_Taxi_Analysis.ipynb.
-
-Run all cells to generate the models and graphs.
-
-📊 Visualizations
-
-(You can upload the graphs you generated here to make the README pop!)
-
-Graph 1: Price vs. Distance (Normal vs. Festival)
-
-Graph 2: Hourly Demand Curve (The "Time Shift")
+Module 2: Open Taxi_Prediction_Spark.ipynb
 
 👤 Author
 
