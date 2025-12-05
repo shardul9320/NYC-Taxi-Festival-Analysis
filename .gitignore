@@ -1,0 +1,18 @@
+
+# Block Data
+*.parquet
+*.parquet.*
+heatmap_predictions/
+
+# Block System Junk
+.ipynb_checkpoints/
+.cache/
+.npm/
+.local/
+.jupyter/
+.ipython/
+.config/
+.bash_logout
+.bashrc
+.profile
+.wget-hsts
