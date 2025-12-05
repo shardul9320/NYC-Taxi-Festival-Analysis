@@ -32,7 +32,6 @@ The "Time-Shift": The 8:00 AM rush hour vanishes. Demand peaks shift to 1:00 AM 
 
 🖼️ Visualizations
 
-(Screenshots of Dask Analysis)
 
 Figure 1: Price vs. Distance comparison showing cheaper rates on festival days.
 
